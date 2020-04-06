@@ -87,18 +87,21 @@ class ShopingCart
         }	
         
     }
-    public function saveTotal($sesis,$tot)
+    public function saveTotal($sesis,$tot,$shipamount)
     {
         $sesid =  mysqli_real_escape_string($this->db, $_POST['sesid']);
         $tot = mysqli_real_escape_string($this->db, $_POST['tot']);
+        $shipamount = mysqli_real_escape_string($this->db, $_POST['picktype']);
+        $tot=$tot+$shipamount;
         $sl="INSERT INTO bal_tab (ses_id,total) VALUE('$sesid','$tot')";
             $resl = mysqli_query($this->db, $sl);
             if($resl===TRUE)
             {
                 $response['status'] = 'success';  
                 $response['message'] = 'Balance Updated';  
-                header('Content-type: application/json'); 							
+                header('Content-type: application/json'); 						
                 echo json_encode($response);
+                unset($_SESSION['shopping_cart']);
             }else
             {
                 die(mysqli_error($konet));
@@ -161,6 +164,11 @@ class ShopingCart
            unset($_SESSION['shopping_cart'][$id]);
         }
     }
+    /*Clear cart after payment*/
+    public function clearCart()
+    {
+        unset($_SESSION['shopping_cart']);
+    }
     /*Update Cart*/
     public function updateCart($id,$itemqty)
     {
@@ -184,11 +192,7 @@ class ShopingCart
             }
     }
     
-    /*Clear cart after payment*/
-    public function clearCart()
-    {
-        unset($_SESSION['shopping_cart']);
-    }
+    
     /*Show Each Product Rate*/
    
     public function showRate($table,$itemid)
