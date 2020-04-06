@@ -71,7 +71,7 @@ if (isset($_GET['id_to_remove']) && isset($_GET['id_to_remove']) != '')
                        
 
                         echo '
-                                <table id="cart-table" class="table table-hover table-bordered">
+                                <table id="cart-table" class="table table-bordered">
                                 <thead>
                                     <tr>
                                     <th scope="col">#</th>
@@ -82,12 +82,12 @@ if (isset($_GET['id_to_remove']) && isset($_GET['id_to_remove']) != '')
                                     </tr>
                                 </thead>';
 
-                        $item_number = 1; 
-                        $item_to_remove = 0; 
-                        $item_to_update = 0;
-                        $total = 0;
-                        foreach ($products as $product) {
-                        echo '
+                                $item_number = 1; 
+                                $item_to_remove = 0; 
+                                $item_to_update = 0;
+                                $total = 0;
+                                foreach ($products as $product) {
+                                echo '
                                 <tbody>
                                     <tr>
                                     <th scope="row" id="itmno">'. $item_number .'</th>
@@ -98,25 +98,48 @@ if (isset($_GET['id_to_remove']) && isset($_GET['id_to_remove']) != '')
                                         <a href="cart.php?id_to_remove=' . $item_to_remove . '" class="text-danger">Remove</a>
                                                                               
                                     </td>
-                                    </tr>
+                                    </tr>                                    
                                 </tbody>
-                           ';
+                             ';
                                
-                           //$total += ($product['price'] * $product['quantity']);
-                            $total += ($product['price'] * $product['quantity']);
-                            $_SESSION['total']=$total;
-                            $item_number++;
-                            $item_to_remove++;  
+                               //$total += ($product['price'] * $product['quantity']);
+                                $total += ($product['price'] * $product['quantity']);
+                                $_SESSION['total']=$total;
+                                $item_number++;
+                                $item_to_remove++;  
                             
                         }
 
                         echo '
                                 <tr>
                                     <th colspan="4" align="right">
+                                       Sub Total:
+                                    </th>
+                                    <td><input type="hidden" name="tot" id="tot" value="'. $_SESSION['total'] .'" /><input type="hidden" name="sesid" value="'. session_id() .'" />
+                                        $ '. $_SESSION['total'] .'
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th colspan="2" align="right">
+                                        Pick-Up Type:
+                                    </th>
+                                    <td colspan="2">
+                                        <select name="picktype" id="picktype" class="form-control">
+                                            <option value="">Select Transport Type</option>
+                                            <option value="0">Pick-Up</option>
+                                            <option value="5">UPS</option>
+                                        </select>
+                                    </td>
+                                    <td colspan="1" align="">
+                                    $<input type="text" value="" id="pickup" name="pickup" disabled style="background-color:#fff;border:none; width:50px;">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th colspan="4" align="right">
                                         Total:
                                     </th>
-                                    <td><input type="hidden" name="tot" value="'. $_SESSION['total'] .'" /><input type="hidden" name="sesid" value="'. session_id() .'" />
-                                        $ '. $_SESSION['total'] .'
+                                    <td><input type="hidden" name="" id="" value="'. $_SESSION['total'] .'" /><input type="hidden" name="sesid" value="'. session_id() .'" />
+                                        $ <input type="text" name="showtot" value="" id="showtot" disabled style="background-color:#fff;border:none;width:50px;">
                                     </td>
                                 </tr>
                                 
@@ -135,7 +158,7 @@ if (isset($_GET['id_to_remove']) && isset($_GET['id_to_remove']) != '')
            
                  <div class="card-footer">
                     <!--a class="btn btn-primary float-right" href="#" id="pay">Make Payment</a-->
-                     <button class="btn btn-primary float-right" type="button" id="pay" onclick="makePay()">Make Payment</button>
+                     <button class="btn btn-primary float-right" type="button" id="pay">Make Payment</button>
                 </div>
             </form>
         </div>
@@ -148,44 +171,69 @@ if (isset($_GET['id_to_remove']) && isset($_GET['id_to_remove']) != '')
     
     <script>
         $(document).on('click','#pay',function(e){  
-            var $this = $(this);
-            var loadingText = '<i class="fa fa-circle-o-notch fa-spin"></i> Adding New Material...';
-            if ($(this).html() !== loadingText) {
-              $this.data('original-text', $(this).html());
-            $this.html(loadingText);}
-            var formData = new FormData($('#cart-form')[0]);             
-            $.ajax({
-          url: "makepay.php", 
-          type: "POST",             
-          data: formData, 
-          contentType: false,       
-          cache: false,   
-          dataType: "JSON",          
-          processData:false, 
-          success: function(responsedata)   
-          { 
-            if(responsedata.status=='success')
-            {
-             alert('Cart Paid');
-                 setTimeout(function() {
-              $this.html($this.data('original-text'));
-            }, 200);
-                location.reload();
-            //$('#balrow').show();
-            }
-          },
-         error:function(responsendata)
-         {
-             alert('An Error Just Occured');
-             setTimeout(function() {
-              $this.html($this.data('original-text'));
-            }, 200);
-         }
-                });
-return false;
+            shiptype=$('#picktype').val();
+            
+            if(shiptype=='')
+                {
+                    alert('Transport Type Missing, Please Select An Option From The Drop Down');
+                }
+            else
+                {
+                    var $this = $(this);
+                    var loadingText = '<i class="fa fa-circle-o-notch fa-spin"></i> Processing Payment...';
+                    if ($(this).html() !== loadingText) {
+                      $this.data('original-text', $(this).html());
+                    $this.html(loadingText);}
+                    var formData = new FormData($('#cart-form')[0]);             
+                    $.ajax({
+                  url: "makepay.php", 
+                  type: "POST",             
+                  data: formData, 
+                  contentType: false,       
+                  cache: false,   
+                  dataType: "JSON",          
+                  processData:false, 
+                  success: function(responsedata)   
+                  { 
+                    if(responsedata.status=='success')
+                    {
+                     alert('Cart Paid');
+                         setTimeout(function() {
+                      $this.html($this.data('original-text'));
+                    }, 200);
+                        window.location.href='cart.php'
+                    //$('#balrow').show();
+                    }
+                  },
+                 error:function(responsendata)
+                 {
+                     alert('An Error Just Occured');
+                     setTimeout(function() {
+                      $this.html($this.data('original-text'));
+                    }, 200);
+                 }
+                 });
+                        return false;
+                }
         });
         
-        
+        $(document).on('change', '#picktype', function(ev)
+        {
+            let shipping='';
+            let tfair=$(this).val();
+            let tot=parseFloat($('#tot').val());
+            if(tfair==='0')
+            {
+                shipping=0;
+            }
+            else if(tfair==='5')
+            {
+                shipping=5;
+            }
+            $('#pickup').val(shipping);
+            $('#showtot').val(shipping+tot);
+            
+        });
     </script>
 </body>
 </html>
